@@ -3,7 +3,10 @@ const mongoose = require('mongoose');
 
 const variantSchema = new mongoose.Schema({
     sku: { type: String, required: true },
-    weight: { type: Number },
+    weight: { type: Number, required: true }, // You already have this, which is GREAT!
+    weightUnit: { type: String, enum: ['LB', 'KG', 'G'], default: 'G' },
+    hsCode: { type: String }, // Harmonized System Code (e.g., '7113.19')
+    countryOfOrigin: { type: String },
     material: { type: String }, // 👈 Check this enum!
     purity: { type: String },
     size: {

@@ -10,9 +10,12 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.940.0",
+    "axios": "^1.12.2",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.7.0",
     "cors": "^2.8.5",
+    "country-state-city": "^3.2.1",
     "crypto": "^1.0.1",
     "csv-parser": "^3.2.0",
     "dotenv": "^17.0.1",

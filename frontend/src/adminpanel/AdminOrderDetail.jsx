@@ -45,25 +45,60 @@ const AdminOrderDetail = ({ order }) => {
 
             {/* Item List */}
             <div>
-                <div className="p-4 text-sm">
-                    <h3 className="font-bold text-base mb-4">Ordered Items</h3>
-                    <section className="h-72 pr-2">
-                        <ul className="space-y-4">
-                            {order.cartItems.map((item) => (
-                                <li key={item._id} className="flex items-start gap-4">
-                                    <img src={item.mainImageAtPurchase} alt="" className="w-16 h-16 rounded object-cover" />
-                                    <div>
-                                        <p className="font-semibold">{item.nameAtPurchase}</p>
-                                        <p className="text-gray-600 text-sm">Qty: {item.quantity}</p>
-                                        <p className="text-gray-600 text-sm">₹{item.priceAtPurchase} each
-                                        </p>
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
-                    </section>
+                <div className="p-4 text-sm bg-gray-50 rounded-lg border">
+                    <h3 className="font-bold text-base mb-4 text-gray-800">Ordered Items (Customs Data)</h3>
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full text-left">
+                            <thead>
+                                <tr className="border-b text-gray-500 text-xs uppercase">
+                                    <th className="pb-2">Product</th>
+                                    <th className="pb-2">Qty</th>
+                                    <th className="pb-2">Price</th>
+                                    <th className="pb-2">HS Code</th>
+                                    <th className="pb-2">Origin</th>
+                                    <th className="pb-2">Weight</th>
+                                </tr>
+                            </thead>
+                            <tbody className="space-y-4">
+                                {order.cartItems.map((item) => (
+                                    <tr key={item._id} className="border-b last:border-0">
+                                        <td className="py-3 flex items-center gap-3">
+                                            <img src={item.mainImageAtPurchase} alt="" className="w-10 h-10 rounded object-cover" />
+                                            <span className="font-medium text-gray-900">{item.nameAtPurchase}</span>
+                                        </td>
+                                        <td className="py-3 text-gray-600">{item.quantity}</td>
+                                        <td className="py-3 text-gray-600">₹{item.priceAtPurchase}</td>
+
+                                        {/* ✅ NEW FIELDS DISPLAY */}
+                                        <td className="py-3 text-gray-600 font-mono text-xs">
+                                            {item.hsCodeAtPurchase || "N/A"}
+                                        </td>
+                                        <td className="py-3 text-gray-600">
+                                            {item.countryOfOriginAtPurchase || "N/A"}
+                                        </td>
+                                        <td className="py-3 text-gray-600">
+                                            {item.weightAtPurchase ? `${item.weightAtPurchase} ${item.weightUnitAtPurchase}` : "N/A"}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
+
+            {/* Shipment Details Section (If shipped) */}
+            {order.trackingNumber && (
+                <div className="p-4 bg-green-50 border border-green-200 rounded text-sm">
+                    <h3 className="font-bold text-green-800 mb-2">Shipment Created</h3>
+                    <p><strong>Tracking:</strong> {order.trackingNumber}</p>
+                    {order.shipmentDetails?.labelURL && (
+                        <a href={order.shipmentDetails.labelURL} target="_blank" rel="noreferrer" className="text-blue-600 underline">
+                            Download Shipping Label
+                        </a>
+                    )}
+                </div>
+            )}
 
             {/* Controls */}
             <div className="flex justify-end">

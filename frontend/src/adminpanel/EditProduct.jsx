@@ -43,10 +43,14 @@ const EditProduct = () => {
         price: "", // Changed from totalPrice
         sku: "",
         stock: "",
-        weight: "", // Changed from weightInGrams
+        weight: "",         // Was weightInGrams
+        weightUnit: "G",    // --- NEW --- (Default to 'G' for grams)
+        hsCode: "",         // --- NEW ---
+        countryOfOrigin: "IN",
         images: [], // Existing image URLs (empty for new variant)
         newFiles: [], // Files selected for upload for this variant
         newPreviews: [],
+        discount: { type: 'percentage', value: 0 }
     });
 
     // --- Data Fetching ---
@@ -163,15 +167,21 @@ const EditProduct = () => {
     };
 
     const handleVariantChange = (index, field, value) => {
+        // setVariants(prev => prev.map((v, i) => {
+        //     if (i === index) {
+        //         if (field === "size") {
+        //             // Ensure value is a string before splitting.
+        //             const sizeArray = typeof value === 'string'
+        //                 ? value.split(',').map(s => s.trim())
+        //                 : [];
+        //             return { ...v, size: sizeArray };
+        //         }
+        //         return { ...v, [field]: value };
+        //     }
+        //     return v;
+        // }));
         setVariants(prev => prev.map((v, i) => {
             if (i === index) {
-                if (field === "size") {
-                    // Ensure value is a string before splitting.
-                    const sizeArray = typeof value === 'string'
-                        ? value.split(',').map(s => s.trim())
-                        : [];
-                    return { ...v, size: sizeArray };
-                }
                 return { ...v, [field]: value };
             }
             return v;
@@ -225,11 +235,14 @@ const EditProduct = () => {
         console.log("Form data before submission:", variants);
         const invalidVariant = variants.some(v => {
             const isInvalid =
-                !v.material ||
+                !v.material || // was metalColor
                 !v.purity ||
                 !v.sku ||
-                v.price == null || isNaN(v.price) ||
-                v.weight == null || isNaN(v.weight) ||
+                !v.weight ||  // was weightInGrams
+                !v.weightUnit || // --- NEW ---
+                !v.hsCode ||  // --- NEW ---
+                !v.countryOfOrigin // --- NEW ---
+            v.price == null || isNaN(v.price) ||
                 !v.discount ||
                 ((!v.images || v.images.length === 0) && (!v.newFiles || v.newFiles.length === 0));
 

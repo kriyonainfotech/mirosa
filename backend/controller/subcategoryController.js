@@ -6,6 +6,7 @@ cloudinary.config(cloudinaryConfig);
 const { Readable } = require("stream");
 const Category = require("../models/Category");
 const SubCategory = require("../models/Subcategory");
+const { uploadToS3, deleteFromS3 } = require("../config/s3");
 /*
 Example cURL commands for Subcategory APIs:
 
@@ -41,37 +42,26 @@ exports.createSubcategory = async (req, res) => {
         console.log("🧾 [Create] Subcategory:", name);
 
         let image = {};
+
+        // 📤 Upload image to S3
         if (file) {
-            const bufferStream = new Readable();
-            bufferStream.push(file.buffer);
-            bufferStream.push(null);
+            console.log("📤 Uploading subcategory image to S3...");
 
-            const result = await new Promise((resolve, reject) => {
-                const upload = cloudinary.uploader.upload_stream(
-                    { folder: "subcategories" },
-                    (err, result) => {
-                        if (err) reject(err);
-                        else resolve(result);
-                    }
-                );
-                bufferStream.pipe(upload);
-            });
+            const result = await uploadToS3(
+                file.buffer,
+                "subcategories",
+                file.mimetype
+            );
 
-            image = { public_id: result.public_id, url: result.secure_url };
+            image = {
+                public_id: result.public_id,  // S3 key
+                url: result.secure_url,       // S3 URL
+            };
+
+            console.log("✅ Image uploaded to S3 successfully");
+        } else {
+            console.warn("⚠️ No image provided. Creating subcategory without image.");
         }
-
-        // if (file) {
-        //     // Use the centralized uploadToCloudinary function
-        //     const result = await uploadToCloudinary(file.buffer, "categories");
-        //     imageData = {
-        //         public_id: result.public_id,
-        //         url: result.secure_url,
-        //     };
-        //     console.log("✅ Image uploaded to Cloudinary successfully");
-        // } else {
-        //     console.warn("⚠️ No image file received. Proceeding without image.");
-        // }
-
 
         const subcategory = new Subcategory({
             name,
@@ -81,14 +71,19 @@ exports.createSubcategory = async (req, res) => {
         });
 
         console.log("📦 [Create] Subcategory object:", subcategory);
+
         await subcategory.save();
-        res.status(201).json({ success: true, subcategory });
+
+        res.status(201).json({
+            success: true,
+            subcategory,
+        });
+
     } catch (err) {
         console.error("❌ Error creating subcategory:", err);
         res.status(500).json({ message: "Server error" });
     }
 };
-
 exports.getAllSubcategories = async (req, res) => {
     try {
         console.log("🔎 [Fetch] All Subcategories");
@@ -157,48 +152,49 @@ exports.getSubcategory = async (req, res) => {
 exports.updateSubcategory = async (req, res) => {
     try {
         const { name, category } = req.body;
-        console.log("📝 [Update] Subcategory ID:", req.body, req.file);
         const file = req.file;
 
+        console.log("📝 [Update] Subcategory:", req.params.id, "File:", !!file);
+
         const sub = await Subcategory.findById(req.params.id);
-        if (!sub) return res.status(404).json({ message: "Subcategory not found" });
+        if (!sub) {
+            return res.status(404).json({ message: "Subcategory not found" });
+        }
 
         let image = sub.image;
 
-        // ✅ Handle image upload & cleanup
+        // 🔄 Handle image update
         if (file) {
+            console.log("📤 Updating subcategory image...");
+
+            // 🧹 Delete old image from S3
             if (image?.public_id) {
-                await cloudinary.uploader.destroy(image.public_id);
+                console.log("🧹 Deleting old S3 image:", image.public_id);
+                await deleteFromS3(image.public_id);
             }
 
-            const bufferStream = new Readable();
-            bufferStream.push(file.buffer);
-            bufferStream.push(null);
-
-            const result = await new Promise((resolve, reject) => {
-                const upload = cloudinary.uploader.upload_stream(
-                    { folder: "subcategories" },
-                    (err, result) => {
-                        if (err) reject(err);
-                        else resolve(result);
-                    }
-                );
-                bufferStream.pipe(upload);
-            });
+            // 📤 Upload new image to S3
+            const result = await uploadToS3(
+                file.buffer,
+                "subcategories",
+                file.mimetype
+            );
 
             image = {
-                public_id: result.public_id,
-                url: result.secure_url,
+                public_id: result.public_id, // S3 key
+                url: result.secure_url,      // S3 URL
             };
+
+            console.log("✅ New image uploaded to S3");
         }
 
-        // ✅ Update name and slug
+        // 🔤 Update Name & Slug
         if (name) {
             sub.name = name;
             sub.slug = slugify(name, { lower: true });
         }
 
-        // ✅ Update category (only if valid)
+        // 🔗 Update Category (validate)
         if (category) {
             const categoryExists = await Category.findById(category);
             if (!categoryExists) {
@@ -207,41 +203,54 @@ exports.updateSubcategory = async (req, res) => {
             sub.category = category;
         }
 
-        // ✅ Update image
+        // 🖼️ Update Image
         sub.image = image;
 
         await sub.save();
-        res.status(200).json(sub);
+
+        res.status(200).json({
+            success: true,
+            sub,
+        });
+
     } catch (err) {
-        console.error("Update Subcategory Error:", err);
+        console.error("❌ Update Subcategory Error:", err);
         res.status(500).json({ message: "Server error" });
     }
 };
 
-
 exports.deleteSubcategory = async (req, res) => {
     try {
-        const subId = await Subcategory.findById(req.params.id);
-        console.log("🔎 [Delete] Subcategory ID:", req.params);
+        console.log("🔎 [Delete] Subcategory:", req.params.id);
 
-        if (!subId) return res.status(404).json({ message: "Subcategory id not found" });
+        const subcategory = await Subcategory.findById(req.params.id);
 
-        const subcategory = await Subcategory.findByIdAndDelete(req.params.id);
-
-        if (!subcategory) return res.status(404).json({ message: "Subcategory not found" })
-
-        if (subId.image && subId.image.public_id) {
-            await cloudinary.uploader.destroy(subId.image.public_id);
+        if (!subcategory) {
+            return res.status(404).json({ message: "Subcategory not found" });
         }
-        console.log("📦 [Delete] Subcategory object:", subcategory)
+
+        // 🧹 Delete image from S3 (if exists)
+        if (subcategory.image?.public_id) {
+            console.log("🧹 Deleting image from S3:", subcategory.image.public_id);
+            await deleteFromS3(subcategory.image.public_id);
+        }
+
+        // 🗑️ Delete subcategory from DB
+        await Subcategory.findByIdAndDelete(req.params.id);
+
         console.log("✅ Subcategory deleted successfully");
-        res.status(200).json({ success: true, message: "Subcategory deleted" });
+
+        res.status(200).json({
+            success: true,
+            message: "Subcategory deleted",
+        });
 
     } catch (err) {
         console.error("❌ Error deleting subcategory:", err);
         res.status(500).json({ message: "Server error" });
     }
 };
+
 
 exports.getSubcategoriesByCategory = async (req, res) => {
     try {

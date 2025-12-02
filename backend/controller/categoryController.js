@@ -3,6 +3,7 @@ const Subcategory = require("../models/Subcategory");
 const slugify = require("slugify");
 const { uploadToCloudinary, cloudinarySDK } = require("../config/cloudinary");
 const { Readable } = require("stream");
+const { uploadToS3, deleteFromS3 } = require("../config/s3");
 
 exports.createCategory = async (req, res) => {
     try {
@@ -13,45 +14,21 @@ exports.createCategory = async (req, res) => {
 
         let imageData = null;
 
-        // if (file) {
-        //     const bufferStream = new Readable();
-        //     bufferStream.push(file.buffer);
-        //     bufferStream.push(null); // End the stream
-
-        //     const streamUpload = (buffer) => {
-        //         return new Promise((resolve, reject) => {
-        //             const stream = cloudinary.uploader.upload_stream(
-        //                 { folder: "categories" },
-        //                 (error, result) => {
-        //                     if (result) {
-        //                         console.log("✅ Image uploaded to Cloudinary successfully");
-        //                         resolve(result);
-        //                     } else {
-        //                         console.error("❌ Cloudinary upload failed:", error);
-        //                         reject(error);
-        //                     }
-        //                 }
-        //             );
-        //             buffer.pipe(stream);
-        //         });
-        //     };
-
-        //     const result = await streamUpload(bufferStream);
-        //     imageData = {
-        //         public_id: result.public_id,
-        //         url: result.secure_url,
-        //     };
-        // } else {
-        //     console.warn("⚠️ No image file received. Proceeding without image.");
-        // }
         if (file) {
-            // Use the centralized uploadToCloudinary function
-            const result = await uploadToCloudinary(file.buffer, "categories");
+            console.log("📤 Uploading category image to S3...");
+
+            const result = await uploadToS3(
+                file.buffer,
+                "categories",
+                file.mimetype
+            );
+
             imageData = {
-                public_id: result.public_id,
-                url: result.secure_url,
+                public_id: result.public_id, // S3 key
+                url: result.secure_url,      // S3 URL
             };
-            console.log("✅ Image uploaded to Cloudinary successfully");
+
+            console.log("✅ Image uploaded to S3 successfully");
         } else {
             console.warn("⚠️ No image file received. Proceeding without image.");
         }
@@ -64,15 +41,18 @@ exports.createCategory = async (req, res) => {
 
         await category.save();
         console.log("🎉 Category created and saved to DB:", category);
+
         res.status(201).send({
             success: true,
-            category
+            category,
         });
+
     } catch (err) {
         console.error("🔥 Error creating category:", err);
         res.status(500).json({ error: err.message });
     }
 };
+
 
 exports.getAllCategories = async (req, res) => {
     try {
@@ -81,7 +61,20 @@ exports.getAllCategories = async (req, res) => {
         res.status(200).send({ success: true, categories });
     } catch (err) {
         console.error("🔥 Error fetching categories:", err);
-        res.status(500).json({ error: err.message });
+
+     // 🛑 Duplicate key handling
+        if (err.code === 11000) {
+            return res.status(400).json({
+                success: false,
+                message: `Category "${err.keyValue.name}" already exists`,
+            });
+        }
+       // Other errors
+        res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: err.message,
+        });
     }
 };
 
@@ -90,8 +83,8 @@ exports.updateCategory = async (req, res) => {
         const { id } = req.params;
         const { name } = req.body;
         const file = req.file;
+
         console.log("📥 Incoming request to update category with ID:", id, "and name:", name);
-        console.log(req.params, "this is req.params", "📥 File received for update:", req.file);
 
         const category = await Category.findById(id);
         if (!category) {
@@ -99,54 +92,49 @@ exports.updateCategory = async (req, res) => {
             return res.status(404).json({ message: "Category not found" });
         }
 
-        // Handle image update
         let image = category.image;
+
+        // 🔄 If new image is uploaded
         if (file) {
-            // Delete old image from Cloudinary
-            if (image && image.public_id) {
-                await cloudinary.uploader.destroy(image.public_id);
+            console.log("🖼️ Updating category image...");
+
+            // 🧹 Delete old image from S3
+            if (image?.public_id) {
+                console.log("🧹 Deleting old S3 image:", image.public_id);
+                await deleteFromS3(image.public_id);
             }
-            console.log("🔄 Old image deleted from Cloudinary successfully");
 
-            // Upload new image
-            const bufferStream = new Readable();
-            bufferStream.push(file.buffer);
-            bufferStream.push(null);
+            // 📤 Upload new image to S3
+            const result = await uploadToS3(
+                file.buffer,
+                "categories",
+                file.mimetype
+            );
 
-            const streamUpload = (buffer) => {
-                return new Promise((resolve, reject) => {
-                    const stream = cloudinary.uploader.upload_stream(
-                        { folder: "categories" },
-                        (error, result) => {
-                            if (result) {
-                                resolve(result);
-                            } else {
-                                reject(error);
-                            }
-                        }
-                    );
-                    buffer.pipe(stream);
-                });
-            };
-
-            const result = await streamUpload(bufferStream);
             image = {
-                public_id: result.public_id,
+                public_id: result.public_id, // this is the S3 key
                 url: result.secure_url,
             };
 
-            console.log("✅ New image uploaded to Cloudinary successfully");
+            console.log("✅ New image uploaded to S3 successfully");
         }
 
+        // 🔄 Update text fields
         category.name = name || category.name;
         category.slug = slugify(category.name, { lower: true });
         category.image = image;
 
         await category.save();
-        console.log("🔄 Updating category:", category);
-        res.status(200).json({ success: true, message: "category updated successfully", category });
+
+        console.log("🔄 Category updated:", category);
+        res.status(200).json({
+            success: true,
+            message: "Category updated successfully",
+            category,
+        });
+
     } catch (err) {
-        console.error("🔥 Error editing category:", err);
+        console.error("🔥 Error updating category:", err);
         res.status(500).json({ error: err.message });
     }
 };
@@ -154,18 +142,26 @@ exports.updateCategory = async (req, res) => {
 exports.deleteCategory = async (req, res) => {
     try {
         const { id } = req.params;
+
         const category = await Category.findById(id);
         if (!category) {
             return res.status(404).json({ message: "Category not found" });
         }
 
-        // Delete image from Cloudinary
-        if (category.image && category.image.public_id) {
-            await cloudinarySDK.uploader.destroy(category.image.public_id);
+        // 🧹 Delete image from S3 if exists
+        if (category.image?.public_id) {
+            console.log("🧹 Deleting category image from S3:", category.image.public_id);
+            await deleteFromS3(category.image.public_id);
         }
 
+        // 🗑️ Delete DB record
         await Category.findByIdAndDelete(id);
-        res.status(200).json({ success: true, message: "Category deleted successfully" });
+
+        res.status(200).json({
+            success: true,
+            message: "Category deleted successfully",
+        });
+
     } catch (err) {
         console.error("🔥 Error deleting category:", err);
         res.status(500).json({ error: err.message });

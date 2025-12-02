@@ -93,6 +93,7 @@ exports.makePayment = async (req, res) => {
 
         const { products, paymentMethod, shippingAddress } = req.body;
 
+
         if (!products || products.length === 0) {
             console.error("❌ No products provided for checkout.");
             return res.status(400).json({ error: "No products provided" });
@@ -119,6 +120,7 @@ exports.makePayment = async (req, res) => {
 
 
         console.log("📝 Line items for Stripe Checkout:", lineItems);
+        console.log("🌐 FRONTEND_URL:", process.env.FRONTEND_URL);
 
         const session = await stripe.checkout.sessions.create({
             payment_method_types: [paymentMethod || "card"],

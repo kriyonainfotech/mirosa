@@ -4,6 +4,8 @@ import { FiCheckCircle } from "react-icons/fi";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useCart } from "../../context/CartContext";
+const backdendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:9000";
+
 // adjust import path to your cart context
 
 export default function PaymentSuccess() {
@@ -11,6 +13,7 @@ export default function PaymentSuccess() {
     const sessionId = searchParams.get("session_id");
     const navigate = useNavigate();
     const { cartItems, clearCart, cartTotal, shippingAddress } = useCart();
+    console.log("Cart Items at Payment Success:", shippingAddress);
 
     const [countdown, setCountdown] = useState(5);
     const [orderCreated, setOrderCreated] = useState(false);
@@ -20,17 +23,29 @@ export default function PaymentSuccess() {
         const createOrder = async () => {
             try {
                 const token = localStorage.getItem("token");
+                console.log("Creating order with session ID:", token);
                 const config = { headers: { Authorization: `Bearer ${token}` } };
 
                 const orderData = {
-                    cartItems: cartItems.map(item => ({
-                        productId: item.productId,
-                        variantId: item.variantId,
-                        quantity: item.quantity,
-                        priceAtPurchase: item.variantDetails.price,
-                        nameAtPurchase: item.name,
-                        mainImageAtPurchase: item.mainImage,
-                    })),
+                    cartItems: cartItems.map(item => {
+                        console.log("🛒 Cart Item Debug:", {
+                            productId: item.productId,
+                            variantId: item.variantId,
+                            quantity: item.quantity,
+                            price: item.variantDetails?.price,   // 👀 log price here
+                            name: item.name,
+                            mainImage: item.mainImage,
+                        });
+
+                        return {
+                            productId: item.productId,
+                            variantId: item.variantId,
+                            quantity: item.quantity,
+                            priceAtPurchase: item.variantDetails?.price || "❌ PRICE MISSING",
+                            nameAtPurchase: item.name,
+                            mainImageAtPurchase: item.mainImage,
+                        };
+                    }),
                     shippingAddress,
                     totalAmount: cartTotal,
                     paymentMethod: "Card",
@@ -39,10 +54,12 @@ export default function PaymentSuccess() {
                 };
 
                 const res = await axios.post(
-                    `${import.meta.env.VITE_BACKEND_URL}/api/order/createOrder`,
+                    `${backdendUrl}/api/order/createOrder`,
                     orderData,
                     config
                 );
+
+                console.log("Order creation response:", res.data);
 
                 if (res.data.success) {
                     toast.success("Order placed successfully!");

@@ -8,6 +8,7 @@ const nodemailer = require('nodemailer');
 const crypto = require('crypto');
 const jwt = require("jsonwebtoken");
 const { uploadToCloudinary, deleteFromCloudinary } = require('../config/cloudinary');
+const { deleteFromS3, uploadToS3 } = require('../config/s3');
 
 // Register User API
 exports.registerUser = async (req, res) => {
@@ -327,6 +328,58 @@ exports.getCounts = async (req, res) => {
 
 }
 
+// exports.updateProfilePhoto = async (req, res) => {
+//     console.log('🔄 [updateProfilePhoto] API hit');
+
+//     try {
+//         // 1. Validate file
+//         if (!req.file) {
+//             console.warn('⚠️ No file received in request');
+//             return res.status(400).json({ message: 'No file uploaded.' });
+//         }
+
+//         const userId = req.user.id;
+//         console.log(`🔍 Looking up user: ${userId}`);
+
+//         // 2. Fetch user from DB
+//         const user = await User.findById(userId);
+//         if (!user) {
+//             console.error(`❌ User not found with ID: ${userId}`);
+//             return res.status(404).json({ message: 'User not found.' });
+//         }
+
+//         // 3. Delete existing Cloudinary image if present
+//         if (user.image?.public_id) {
+//             console.log(`🧹 Deleting old profile image: ${user.image.public_id}`);
+//             await deleteFromCloudinary(user.image.public_id);
+//         }
+
+//         // 4. Upload new image
+//         console.log('📤 Uploading new image to Cloudinary...');
+//         const uploadResult = await uploadToCloudinary(req.file.buffer, 'profile_photos');
+//         console.log('✅ Upload successful:', uploadResult.secure_url);
+
+//         // 5. Save new image data
+//         user.image = {
+//             public_id: uploadResult.public_id,
+//             url: uploadResult.secure_url
+//         };
+//         await user.save();
+//         console.log('💾 User profile updated with new image.');
+
+//         // 6. Send response
+//         res.status(200).json({
+//             success: true,
+//             message: 'Profile photo updated successfully.',
+//             imageUrl: user.image.url
+//         });
+
+//     } catch (error) {
+//         console.error('🔥 Error in updateProfilePhoto:', error);
+//         res.status(500).json({ message: 'Server error' });
+//     }
+// };
+
 exports.updateProfilePhoto = async (req, res) => {
     console.log('🔄 [updateProfilePhoto] API hit');
 
@@ -347,15 +400,15 @@ exports.updateProfilePhoto = async (req, res) => {
             return res.status(404).json({ message: 'User not found.' });
         }
 
-        // 3. Delete existing Cloudinary image if present
+        // 3. Delete existing S3 image if present
         if (user.image?.public_id) {
-            console.log(`🧹 Deleting old profile image: ${user.image.public_id}`);
-            await deleteFromCloudinary(user.image.public_id);
+            console.log(`🧹 Deleting old S3 image: ${user.image.public_id}`);
+            await deleteFromS3(user.image.public_id);
         }
 
-        // 4. Upload new image
-        console.log('📤 Uploading new image to Cloudinary...');
-        const uploadResult = await uploadToCloudinary(req.file.buffer, 'profile_photos');
+        // 4. Upload new image to S3
+        console.log('📤 Uploading new image to S3...');
+        const uploadResult = await uploadToS3(req.file.buffer, 'profile_photos', req.file.mimetype);
         console.log('✅ Upload successful:', uploadResult.secure_url);
 
         // 5. Save new image data
@@ -364,7 +417,7 @@ exports.updateProfilePhoto = async (req, res) => {
             url: uploadResult.secure_url
         };
         await user.save();
-        console.log('💾 User profile updated with new image.');
+        console.log('💾 User profile updated with new S3 image.');
 
         // 6. Send response
         res.status(200).json({

@@ -10,9 +10,6 @@ const { Readable } = require('stream');
 const getPublicIdFromCloudinaryUrl = (url) => {
     if (!url) return null;
     const parts = url.split('/');
-    // Cloudinary URL format is typically:
-    // .../upload/v<version>/<folder>/<public_id>.<extension>
-    // We want to get '<folder>/<public_id>'
     const filenameWithExtension = parts[parts.length - 1];
     const folder = parts[parts.length - 2];
     const publicId = `${folder}/${filenameWithExtension.split('.')[0]}`;
@@ -90,7 +87,10 @@ exports.addProduct = async (req, res) => {
             finalVariantsForDb.push({
                 // _id: currentVariantFromFrontend._id, // Only include if it's an existing variant with an actual _id
                 sku: currentVariantFromFrontend.sku,
-                weight: Number(currentVariantFromFrontend.weightInGrams), // ✅ Ensure conversion and correct field name
+                weight: Number(currentVariantFromFrontend.weight),
+                weightUnit: currentVariantFromFrontend.weightUnit,         // 👇 NEW
+                hsCode: currentVariantFromFrontend.hsCode,                 // 👇 NEW
+                countryOfOrigin: currentVariantFromFrontend.countryOfOrigin, // 👇 NEW
                 material: currentVariantFromFrontend.metalColor, // ✅ Ensure mapping from frontend name
                 purity: currentVariantFromFrontend.purity,
                 size: currentVariantFromFrontend.size,
@@ -260,6 +260,10 @@ exports.updateProduct = async (req, res) => {
                 _id: variantData._id,
                 sku: variantData.sku,
                 weight: Number(variantData.weight),
+                weight: Number(variantData.weight),
+                weightUnit: variantData.weightUnit,     // 👇 NEW
+                hsCode: variantData.hsCode,             // 👇 NEW
+                countryOfOrigin: variantData.countryOfOrigin, // 👇 NEW
                 material: variantData.material,
                 purity: variantData.purity,
                 size: variantData.size,
