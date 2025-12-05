@@ -40,12 +40,12 @@ const OrderSchema = new mongoose.Schema({
 
         // Details of the *physical box* the admin ships
         package: {
-            weight: { type: Number, required: true },
-            weightUnit: { type: String, enum: ['LB', 'KG'], required: true },
-            length: { type: Number, required: true },
-            width: { type: Number, required: true },
-            height: { type: Number, required: true },
-            dimensionsUnit: { type: String, enum: ['IN', 'CM'], required: true }
+            weight: { type: Number },
+            weightUnit: { type: String, enum: ['LB', 'KG'] },
+            length: { type: Number },
+            width: { type: Number },
+            height: { type: Number },
+            dimensionsUnit: { type: String, enum: ['IN', 'CM'] }
         }
     }
 

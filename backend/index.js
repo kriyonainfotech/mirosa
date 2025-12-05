@@ -12,7 +12,7 @@ app.use(express.urlencoded({ extended: true })); // for form-urlencoded
 
 // CORS
 app.use(cors({
-    origin: ["http://localhost:5173", "https://mirosajewelry.vercel.app", "https://mirosajewelry.com"],
+    origin: ["http://localhost:5174", "https://mirosajewelry.vercel.app", "https://mirosajewelry.com"],
     credentials: true,
 }));
 

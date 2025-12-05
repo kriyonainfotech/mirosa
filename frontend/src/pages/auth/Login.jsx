@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import logo from '../../../public/logo/marron_icon.png'; // update with your actual path
+const logo = '/logo/marron_icon.png'; // served from public root
 import { Link } from 'react-router-dom';
 import axios from "axios";
 import { useNavigate } from "react-router-dom";

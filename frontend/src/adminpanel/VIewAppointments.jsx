@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { FiCalendar, FiClock, FiTag, FiDollarSign, FiEdit } from 'react-icons/fi';
 import { toast } from 'react-toastify';
+import { Loader2 } from "lucide-react";
 
 const backdendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:9000";
 
@@ -126,13 +127,17 @@ export default function AppointmentsPage() {
     };
 
     if (loading) {
-        return <div className="p-6 text-center text-gray-500">⏳ Loading appointments...</div>;
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50/50">
+                <Loader2 className="w-10 h-10 text-indigo-600 animate-spin mb-3" />
+                <p className="text-gray-500 font-medium">Loading Users...</p>
+            </div>
+        );
     }
-
     return (
         <div className="p-6 bg-gray-50 min-h-screen">
             <div className="max-w-7xl mx-auto">
-                <h1 className="text-3xl font-bold text-gray-800 mb-6">📅 Virtual Appointments</h1>
+                <h1 className="text-3xl fraunces font-bold text-gray-800 mb-6">Virtual Appointments</h1>
                 {appointments.length === 0 ? (
                     <div className="text-center bg-white p-12 rounded-lg shadow-md">
                         <p className="text-gray-500">No appointments found.</p>

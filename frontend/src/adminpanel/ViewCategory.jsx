@@ -12,6 +12,7 @@ import {
   FaCheck,
   FaTimes,
 } from "react-icons/fa";
+import { Loader2 } from "lucide-react";
 
 const backdendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:9000";
 
@@ -19,6 +20,7 @@ const ViewCategory = () => {
   const [categories, setCategories] = useState([]);
   const [isFeatured, setIsFeatured] = useState(false); // Kept your original state logic
   const [searchTerm, setSearchTerm] = useState(""); // Added for UI filtering
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
@@ -43,6 +45,7 @@ const ViewCategory = () => {
       }
 
       try {
+        setLoading(true);
         console.log("Fetching categories...");
         const res = await axios.get(
           `${backdendUrl}/api/category/allcategories`,
@@ -65,6 +68,8 @@ const ViewCategory = () => {
       } catch (error) {
         console.error("Error fetching categories:", error);
         toast.error("Failed to load categories");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -147,6 +152,15 @@ const ViewCategory = () => {
       cat.slug.toLowerCase().includes(searchTerm.toLowerCase()) ||
       cat._id.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50/50">
+        <Loader2 className="w-10 h-10 text-indigo-600 animate-spin mb-3" />
+        <p className="text-gray-500 font-medium">Loading Users...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 min-h-screen bg-gray-50/50">
@@ -254,16 +268,14 @@ const ViewCategory = () => {
                             !category.isFeatured
                           )
                         }
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${
-                          category.isFeatured ? "bg-indigo-600" : "bg-gray-200"
-                        }`}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 ${category.isFeatured ? "bg-indigo-600" : "bg-gray-200"
+                          }`}
                       >
                         <span
-                          className={`${
-                            category.isFeatured
-                              ? "translate-x-6"
-                              : "translate-x-1"
-                          } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
+                          className={`${category.isFeatured
+                            ? "translate-x-6"
+                            : "translate-x-1"
+                            } inline-block h-4 w-4 transform rounded-full bg-white transition-transform`}
                         />
                       </button>
                       <div className="text-[10px] text-gray-400 mt-1 font-medium">

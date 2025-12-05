@@ -317,3 +317,25 @@ exports.mergeGuestCart = async (req, res) => {
         res.status(500).json({ success: false, message: 'Server error during cart merge.' });
     }
 };
+
+// @route   POST /api/cart/clear
+// @desc    Clear all items from user's cart
+// @access  Private
+exports.clearCart = async (req, res) => {
+    const userId = req.user.id;
+
+    try {
+        let cart = await Cart.findOne({ userId });
+        if (!cart) {
+            return res.status(200).json({ success: true, message: 'Cart already empty.' });
+        }
+
+        cart.items = [];
+        await cart.save();
+        res.status(200).json({ success: true, message: 'Cart cleared successfully!', cart });
+
+    } catch (error) {
+        console.error('Error clearing cart:', error);
+        res.status(500).json({ success: false, message: 'Server error clearing cart.' });
+    }
+};

@@ -1,53 +1,3 @@
-// import React, { useState, useEffect } from 'react';
-// import { FiChevronLeft, FiChevronRight, } from 'react-icons/fi';
-
-// const banners = [
-//     '/banner/banner1.png',
-//     '/banner/banner2.png',
-//     '/banner/banner3.png'
-// ];
-
-// export default function BannerSlider() {
-//     const [current, setCurrent] = useState(0);
-//     const total = banners.length;
-
-//     const nextSlide = () => setCurrent((current + 1) % total);
-//     const prevSlide = () => setCurrent((current - 1 + total) % total);
-
-//     useEffect(() => {
-//         const interval = setInterval(() => {
-//             setCurrent((prev) => (prev + 1) % total);
-//         }, 5000); // changes slide every 5 sec
-
-//         return () => clearInterval(interval); // cleanup on unmount
-//     }, [total]);
-
-
-//     return (
-//         <section className="w-full aspect-[13/6] overflow-hidden relative">
-//             {/* Slide */}
-//             <div
-//                 className="w-full h-full bg-cover bg-[center_50%] transition-all duration-700"
-//                 style={{ backgroundImage: `url(${banners[current]})` }}
-//             />
-
-//             {/* Arrows */}
-//             <button
-//                 className="absolute top-1/2 left-4 transform -translate-y-1/2 text-3xl text-white bg-black/30 hover:bg-black/50 p-2 rounded-full z-10"
-//                 onClick={prevSlide}
-//             >
-//                 <FiChevronLeft />
-//             </button>
-
-//             <button
-//                 className="absolute top-1/2 right-4 transform -translate-y-1/2 text-3xl text-white bg-black/30 hover:bg-black/50 p-2 rounded-full z-10"
-//                 onClick={nextSlide}
-//             >
-//                 <FiChevronRight />
-//             </button>
-//         </section>
-//     );
-// }
 import React, { useState, useEffect, useRef } from 'react';
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { Link } from 'react-router-dom';
@@ -61,17 +11,10 @@ const slides = [
         link: 'shop'
     },
     {
-        title: "Modern Heirlooms",
-        subtitle: "Pieces destined to be treasured",
-        cta: "New Arrivals",
-        video: '/34590-402333480_small.mp4',
-        link: '/new-arrivals'
-    },
-    {
         title: "Artisan Crafted",
         subtitle: "Ethically sourced, meticulously designed",
         cta: "Meet Our Makers",
-        video: '/videos/jewelry-hero-3.mp4',
+        video: '/5106444-hd_1920_1080_25fps.mp4',
         link: '/about'
     }
 ];
@@ -88,7 +31,7 @@ export default function BannerSlider() {
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrent((prev) => (prev + 1) % total);
-        }, 7000);
+        }, 10000);
 
         return () => clearInterval(interval);
     }, [total]);
@@ -103,14 +46,15 @@ export default function BannerSlider() {
                 {/* Video Background */}
                 <div className="absolute inset-0 z-0">
                     <video
+                        key={current}
                         ref={videoRef}
                         autoPlay
                         loop
                         muted
                         playsInline
                         className="w-full h-full object-cover"
+                        src={slides[current].video}
                     >
-                        <source src={slides[current].video} type="video/mp4" />
                         Your browser does not support the video tag.
                     </video>
 

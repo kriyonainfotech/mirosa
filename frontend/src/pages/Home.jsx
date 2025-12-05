@@ -169,36 +169,6 @@ const Home = () => {
         }
     }, []);
 
-
-    // if (loading) {
-    //     return <div className="text-center py-8">Loading products...</div>;
-    // }
-
-    // if (error) {
-    //     return <div className="text-center py-8 text-red-600">Error: {error}</div>;
-    // }
-
-    // if (Object.keys(products).length === 0) {
-    //     return <div className="text-center py-8 text-gray-500">No products found for these categories.</div>;
-    // }
-    // useEffect(() => {
-    //     const fetchCategories = async () => {
-    //         try {
-    //             const response = await axios.get(`${backdendUrl}/api/category/getCatWithSubCats`);
-
-    //             console.log("Fetched categories:", response.data);
-
-    //             if (response.data.success) {
-    //                 setCategories(response.data.categories);
-    //             }
-    //         } catch (error) {
-    //             console.error('Error fetching categories:', error);
-    //         }
-    //     };
-    //     fetchCategories();
-    // }, []);
-    // console.log("Categories:", categories);
-
     return (
         <div>
             <BannerSlider />

@@ -465,7 +465,14 @@ export const CartProvider = ({ children }) => {
     const clearCart = async () => {
         const token = localStorage.getItem('token');
         if (token) {
-            console.log("Clear Cart for authenticated user not yet fully implemented in backend.");
+            try {
+                // Call backend to clear cart
+                await axios.post(`${backdendUrl}/api/cart/clear`, {}, getAuthHeaders());
+                console.log("Cart cleared on backend.");
+            } catch (error) {
+                console.error("Failed to clear backend cart:", error);
+                // toast.error("Failed to sync cart clear with server.");
+            }
         }
         localStorage.removeItem('guestCart');
         setCartItems([]);
