@@ -1,6 +1,6 @@
 import React from 'react';
 const logo = '/logo/marron_icon.png'; // served from public root
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useState } from "react";
 import axios from "axios";
 import { encryptData } from "../../utils/secureStorage"; // assuming you already made this
@@ -20,7 +20,7 @@ export default function Signup() {
 
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
-
+    const navigate = useNavigate();
     const handleChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData((prev) => ({
@@ -35,11 +35,11 @@ export default function Signup() {
         setSuccess("");
 
         if (!formData.termsAccepted) {
-            return setError("You must agree to the Terms & Conditions.");
+            return toast.error("You must agree to the Terms & Conditions.");
         }
 
         if (formData.password !== formData.confirmPassword) {
-            return setError("Passwords do not match.");
+            return toast.error("Passwords do not match.");
         }
 
         try {
@@ -48,6 +48,7 @@ export default function Signup() {
                 phone: formData.phone,
                 email: formData.email,
                 password: formData.password,
+                termsAccepted: formData.termsAccepted,
             });
 
             // Save encrypted user & token
@@ -58,12 +59,20 @@ export default function Signup() {
             toast.success("Account created successfully!");
             navigate("/login"); // or show modal, etc.
         } catch (err) {
-            // toast.error("Someth+ing went wrong!");
+            toast.error(err.response?.data?.message || "Something went wrong!");
             setError(err.response?.data?.message || "Something went wrong");
             console.log(err);
         }
     };
 
+    // if (error) {
+    //     toast.error(error);
+    //     console.log(error);
+    // }
+
+    if (success) {
+        toast.success(success);
+    }
 
     return (
         <div className="min-h-screen flex items-center justify-center px-4 py-6">
@@ -159,24 +168,15 @@ export default function Signup() {
                                 onChange={handleChange}
                                 className="accent-rose-900" />
                             <label className="text-sm text-gray-700 nunito">
-                                I agree to the <a href="#" className="text-maroon underline">Terms & Conditions</a>
+                                I agree to the <a href="https://mirosajewelry.com/privacy-policy" className="text-maroon underline">Terms & Conditions</a>
                             </label>
                         </div>
-                        {error && <p className="text-red-600 nunito text-sm">{error}</p>}
-                        {success && <p className="text-green-600 text-sm">{success}</p>}
-
                         <button
                             type="submit"
                             className="w-full text-white py-2 rounded-lg bg-maroon transition nunito"
                         >
                             Create Account
                         </button>
-
-                        {/* <div className="text-center text-sm text-gray-600">or</div>
-
-                        <button className="w-full nunito border border-red-900 text-maroon py-2 rounded-md hover:bg-wine hover:text-white transition">
-                            Continue with Google
-                        </button> */}
                     </form>
 
 

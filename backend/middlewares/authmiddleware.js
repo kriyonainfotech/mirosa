@@ -25,8 +25,10 @@ const isAdmin = async (req, res, next) => {
 
 const isUser = async (req, res, next) => {
     try {
+        console.log(`🔐 [isUser] Request: ${req.method} ${req.originalUrl}`);
         const token = req.headers.authorization?.split(" ")[1]; // Bearer <token>
-        console.log("🔐 [isUser] Token:", token);
+        console.log("🔐 [isUser] Token:", token ? `${token.substring(0, 20)}...` : "MISSING");
+
         if (!token) {
             return res.status(401).json({ message: "Access token missing" });
         }
@@ -43,7 +45,7 @@ const isUser = async (req, res, next) => {
         req.user = user; // attach full user doc
         next();
     } catch (err) {
-        console.error("❌ [isUser] Error:", err);
+        console.error("❌ [isUser] Error:", err.message);
         return res.status(401).json({ message: "Invalid or expired token", error: err.message });
     }
 };

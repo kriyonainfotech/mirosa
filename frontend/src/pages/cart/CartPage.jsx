@@ -53,7 +53,7 @@ export default function CartPage() {
             </div>
         );
     }
-
+    console.log(cartError, "cartError----------------------")
     if (cartError) {
         return (
             <div className="px-6 py-10 max-w-7xl mx-auto text-center shadow-md rounded-lg mt-10 text-red-600">

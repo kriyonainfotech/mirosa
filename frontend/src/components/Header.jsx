@@ -520,10 +520,6 @@ export default function Header() {
                                         <li>
                                             <Link to="/wishlist" className="hover:text-maroon block">My Wishlist</Link>
                                         </li>
-
-                                        <li>
-                                            <p>Track Your Order</p>
-                                        </li>
                                         <li>
                                             <Link to="/contact" className="hover:text-maroon block">Contact Us</Link>
                                         </li>

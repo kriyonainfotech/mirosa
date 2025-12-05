@@ -1,6 +1,7 @@
 const axios = require('axios');
 const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NmU1OGIwOTUyNWNmNTlkOWY2ZGJlNSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc2NDkyMTEzNywiZXhwIjoxNzY1MDA3NTM3fQ.N1ypzdZ9v8FSTmZaIGwBVa4Sk6jPf10eI2FMGljbLIE';
-const url = 'https://mirosajewelry.com/api/cart';
+// const url = 'https://mirosajewelry.com/api/cart';
+const url = 'http://localhost:4000/api/cart';
 
 async function test() {
     try {

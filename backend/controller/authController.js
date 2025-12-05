@@ -15,7 +15,7 @@ exports.registerUser = async (req, res) => {
     console.log('📝 [RegisterUser] Received registration request:', req.body);
 
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, termsAccepted } = req.body;
 
         // Input validation
         if (!name || !email || !password) {
@@ -31,7 +31,7 @@ exports.registerUser = async (req, res) => {
         }
 
         // Create new user
-        const user = new User({ name, email, password });
+        const user = new User({ name, email, password, termsAccepted });
         await user.save();
 
         // Generate JWT Token
