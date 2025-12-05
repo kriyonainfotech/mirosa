@@ -27,43 +27,9 @@ const ProfilePhotoModal = ({ isOpen, onRequestClose }) => {
     const token = localStorage.getItem("token"); // This gets the JWT stored during login
 
     if (!token) {
-        // Handle case where token is missing (e.g., user not logged in or session expired)
-        setError("Authentication token not found. Please log in again.");
-        toast.error("Authentication token not found. Please log in again.");
         navigate("/login"); // Redirect to login page
         return;
     }
-
-    // const handleUpload = async () => {
-    //     if (!file) return;
-    //     setIsUploading(true);
-
-    //     const formData = new FormData();
-    //     formData.append('profilePhoto', file);
-
-    //     console.log('API TOUCHED!!!!!!!!!!!!!')
-    //     try {
-    //         const response = await axios.put(`${backdendUrl}/api/auth/profile/update-photo`, formData, {
-    //             withCredentials: true,
-    //             headers: {
-    //                 Authorization: `Bearer ${token}`
-    //             }
-    //         });
-
-    //         console.log(response, 'data')
-    //         if (response.data.success) {
-    //             // setUser({ ...user, image: { url: response.data.imageUrl } });
-
-    //             toast.success('Photo updated!');
-    //         }
-    //         onRequestClose(); // Close modal on success
-    //     } catch (error) {
-    //         console.log(error, 'error')
-    //         toast.error('Upload failed. Please try again.');
-    //     } finally {
-    //         setIsUploading(false);
-    //     }
-    // };
 
     const handleUpload = async () => {
         if (!file) return;

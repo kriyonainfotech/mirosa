@@ -52,12 +52,12 @@ const ProfilePage = () => {
                 return;
             }
 
-            if (!user?.id) return;
+            if (!user?._id) return;
 
             setIsLoading(true);
 
             try {
-                const { data } = await axios.get(`${backdendUrl}/api/auth/get-user/${user.id}`, {
+                const { data } = await axios.get(`${backdendUrl}/api/auth/get-user/${user._id}`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },
@@ -74,7 +74,7 @@ const ProfilePage = () => {
         };
 
         fetchUserProfile();
-    }, [user?.id, location.search]); // ✅ NO query here, just location.search
+    }, [user?._id, location.search]); // ✅ NO query here, just location.search
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;

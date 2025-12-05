@@ -153,6 +153,35 @@ exports.updateUserRole = async (req, res) => {
     }
 };
 
+exports.deleteUser = async (req, res) => {
+    console.log('🗑️ [DeleteUser] Received delete user request:', req.params.id);
+
+    try {
+        const { id } = req.params;
+
+        // Input validation
+        if (!id) {
+            console.log('⚠️ [DeleteUser] Missing user ID');
+            return res.status(400).json({ message: 'User ID is required.' });
+        }
+
+        // Find and delete user
+        const user = await User.findByIdAndDelete(id);
+
+        if (!user) {
+            console.log('🚫 [DeleteUser] User not found:', id);
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        console.log('✅ [DeleteUser] User deleted successfully:', id);
+
+        res.status(200).json({ success: true, message: 'User deleted successfully.' });
+    } catch (error) {
+        console.error('❌ [DeleteUser] Error deleting user:', error);
+        res.status(500).json({ message: 'Internal server error.' });
+    }
+};
+
 // Send Reset Password Email API
 exports.sendResetPasswordEmail = async (req, res) => {
     console.log('📧 [SendResetPasswordEmail] Received reset password request:', req.body);
@@ -327,58 +356,6 @@ exports.getCounts = async (req, res) => {
     }
 
 }
-
-// exports.updateProfilePhoto = async (req, res) => {
-//     console.log('🔄 [updateProfilePhoto] API hit');
-
-//     try {
-//         // 1. Validate file
-//         if (!req.file) {
-//             console.warn('⚠️ No file received in request');
-//             return res.status(400).json({ message: 'No file uploaded.' });
-//         }
-
-//         const userId = req.user.id;
-//         console.log(`🔍 Looking up user: ${userId}`);
-
-//         // 2. Fetch user from DB
-//         const user = await User.findById(userId);
-//         if (!user) {
-//             console.error(`❌ User not found with ID: ${userId}`);
-//             return res.status(404).json({ message: 'User not found.' });
-//         }
-
-//         // 3. Delete existing Cloudinary image if present
-//         if (user.image?.public_id) {
-//             console.log(`🧹 Deleting old profile image: ${user.image.public_id}`);
-//             await deleteFromCloudinary(user.image.public_id);
-//         }
-
-//         // 4. Upload new image
-//         console.log('📤 Uploading new image to Cloudinary...');
-//         const uploadResult = await uploadToCloudinary(req.file.buffer, 'profile_photos');
-//         console.log('✅ Upload successful:', uploadResult.secure_url);
-
-//         // 5. Save new image data
-//         user.image = {
-//             public_id: uploadResult.public_id,
-//             url: uploadResult.secure_url
-//         };
-//         await user.save();
-//         console.log('💾 User profile updated with new image.');
-
-//         // 6. Send response
-//         res.status(200).json({
-//             success: true,
-//             message: 'Profile photo updated successfully.',
-//             imageUrl: user.image.url
-//         });
-
-//     } catch (error) {
-//         console.error('🔥 Error in updateProfilePhoto:', error);
-//         res.status(500).json({ message: 'Server error' });
-//     }
-// };
 
 exports.updateProfilePhoto = async (req, res) => {
     console.log('🔄 [updateProfilePhoto] API hit');

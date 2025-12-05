@@ -35,7 +35,11 @@ const ViewUsers = () => {
         try {
             console.log("🗑️ Deleting user with ID:", id);
             // Fixed: Changed 'apiurl' to 'backdendUrl' to match defined constant
-            const res = await axios.delete(`${backdendUrl}/api/auth/deleteUser/${id}`);
+            const res = await axios.delete(`${backdendUrl}/api/auth/delete-user/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                },
+            });
 
             if (res.data.success) {
                 console.log("✅ User deleted successfully");

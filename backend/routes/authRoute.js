@@ -1,5 +1,5 @@
 const express = require('express');
-const { registerUser, loginUser, updateUserRole, sendResetPasswordEmail, resetPassword, getAllUsers, getCounts, updateProfilePhoto, deleteProfilePhoto, getUserById, updateProfile, checkAuth } = require('../controller/authController');
+const { registerUser, loginUser, updateUserRole, sendResetPasswordEmail, resetPassword, getAllUsers, getCounts, updateProfilePhoto, deleteProfilePhoto, getUserById, updateProfile, checkAuth, deleteUser } = require('../controller/authController');
 const { isUser, isAdmin } = require('../middlewares/authmiddleware');
 const upload = require("../middlewares/multer");
 const router = express.Router()
@@ -22,5 +22,6 @@ router.get('/get-user/:id', isUser, getUserById);
 router.put('/profile/update-detail', isUser, updateProfile);
 router.get("/admin/check-auth", isUser, isAdmin, checkAuth); // Check if admin
 router.get("/check-auth", isUser, checkAuth); // Only check if logged in
+router.delete("/delete-user/:id", isAdmin, deleteUser);
 
 module.exports = router;

@@ -85,7 +85,7 @@ const ContactUsPage = () => {
                                     <FiPhone className="text-maroon text-xl mt-1 flex-shrink-0" />
                                     <div>
                                         <h4 className="font-semibold text-gray-700">Call Us</h4>
-                                        <a href="tel:+919876543210" className="text-gray-600 hover:text-maroon transition-colors">+91 00000 00000</a>
+                                        <a href="tel:+919876543210" className="text-gray-600 hover:text-maroon transition-colors">+1 (914) 844-6729</a>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-4">

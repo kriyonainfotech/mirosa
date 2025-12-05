@@ -40,8 +40,7 @@ const AddCategory = () => {
       return;
     }
 
-    // --- IMPORTANT: Get the token from localStorage ---
-    const token = localStorage.getItem("token"); // This gets the JWT stored during login
+    const token = localStorage.getItem("token");
 
     if (!token) {
       // Handle case where token is missing (e.g., user not logged in or session expired)
@@ -84,11 +83,11 @@ const AddCategory = () => {
         console.log(error, "add category");
         setError(
           response.data?.message ||
-            "Failed to create category due to an unknown reason."
+          "Failed to create category due to an unknown reason."
         );
         toast.error(
           response.data?.message ||
-            "Failed to create category due to an unknown reason."
+          "Failed to create category due to an unknown reason."
         );
       }
     } catch (err) {
@@ -98,11 +97,11 @@ const AddCategory = () => {
       );
       setError(
         err.response?.data?.message ||
-          "Something went wrong while creating category."
+        "Something went wrong while creating category."
       );
       toast.error(
         err.response?.data?.message ||
-          "Something went wrong while creating category."
+        "Something went wrong while creating category."
       );
       // If the error is specifically due to an invalid/expired token from the backend
       if (
